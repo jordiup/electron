@@ -1,4 +1,10 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const path = require('path');
+const os = require('os');
+const { app, BrowserWindow, Menu, ipcMain, shell } = require('electron');
+const imagemin = require('imagemin');
+const imageminMozjpeg = require('imagemin-mozjpeg');
+const imageminPngquant = require('imagemin-pngquant');
+const slash = require('slash');
 
 process.env.NODE_ENV = 'development';
 
@@ -11,11 +17,14 @@ let aboutWindow;
 function createMainWindow() {
 	mainWindow = new BrowserWindow({
 		title: 'Image Shrink',
-		width: 500,
+		width: isDev ? 800 : 500,
 		height: 600,
 		icon: `${__dirname}/assets/icons/Icon_256x256.png`,
 		resizable: isDev ? true : false,
-		backgroundColor: 'white'
+		backgroundColor: 'white',
+		webPreferences: {
+			nodeIntegration: true
+		}
 	});
 	// Can be used if CSP meta header not set
 	// mainWindow.loadURL(`file://${__dirname}/app/index.html`);
@@ -44,17 +53,31 @@ app.on('ready', () => {
 });
 
 const menu = [
-	...(isMac ? [{ role: 'appMenu' }] : []),
+	...(isMac
+		? [
+				{
+					label: app.name,
+					submenu: [
+						{
+							label: 'About',
+							click: createAboutWindow
+						}
+					]
+				}
+		  ]
+		: [
+				{
+					label: 'Help',
+					submenu: [
+						{
+							label: 'About',
+							click: createAboutWindow
+						}
+					]
+				}
+		  ]),
 	{
-		label: app.name,
-		submenu: [{ label: 'About', click: createAboutWindow }],
-		submenu: [
-			{
-				label: 'Quit',
-				accelerator: 'CmdOrCtrl+W',
-				click: () => app.quit()
-			}
-		]
+		role: 'fileMenu'
 	},
 	...(isDev
 		? [
@@ -63,17 +86,40 @@ const menu = [
 					submenu: [
 						{ role: 'reload' },
 						{ role: 'forcereload' },
-						{ role: 'seperator' },
-						{ role: 'toggleDevTools' }
+						{ type: 'separator' },
+						{ role: 'toggledevtools' }
 					]
 				}
 		  ]
 		: [])
 ];
 
-// if (isMac) {
-// 	menu.unshift({ role: 'appMenu' });
-// }
+ipcMain.on('image:minimize', (e, options) => {
+	options.dest = path.join(os.homedir(), 'imageshrink');
+	shrinkImage(options);
+	console.log(options);
+});
+
+async function shrinkImage({ imgPath, quality, dest }) {
+	const pngQual = quality / 100;
+	try {
+		const files = await imagemin([slash(imgPath)], {
+			destination: dest,
+			plugins: [
+				imageminMozjpeg(quality),
+				imageminPngquant({
+					quality: [pngQual, pngQual]
+				})
+			]
+		});
+		console.log(files);
+		shell.openPath(dest);
+		mainWindow.webContents.send('image:done');
+	} catch (err) {
+		console.log(err);
+	}
+	//=> [{data: <Buffer 89 50 4e …>, destinationPath: 'build/images/foo.jpg'}, …]
+}
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
