@@ -1,0 +1,18 @@
+{
+	"name": "image-shrink",
+	"version": "1.0.0",
+	"description": "An app to optimize images",
+	"main": "main.js",
+	"scripts": {
+		"start": "electron ."
+	},
+	"keywords": [
+		"jordi",
+		"hermoso"
+	],
+	"author": "@jordihermoso",
+	"license": "ISC",
+	"dependencies": {
+		"electron": "^9.0.0"
+	}
+}
