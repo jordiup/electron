@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const log = require('electron-log');
 const Store = require('./Store');
 
@@ -39,13 +39,20 @@ function createMainWindow() {
 	}
 
 	mainWindow.loadFile('./app/index.html');
+
 }
 
 app.on('ready', () => {
 	createMainWindow();
 
+	mainWindow.webContents.on('dom-ready', () => {
+		mainWindow.webContents.send('settings:get', store.get('settings'));
+	});
+
 	const mainMenu = Menu.buildFromTemplate(menu);
 	Menu.setApplicationMenu(mainMenu);
+
+	mainWindow.on('ready', () => (mainWindow = null))
 });
 
 const menu = [
@@ -55,18 +62,22 @@ const menu = [
 	},
 	...(isDev
 		? [
-				{
-					label: 'Developer',
-					submenu: [
-						{ role: 'reload' },
-						{ role: 'forcereload' },
-						{ type: 'separator' },
-						{ role: 'toggledevtools' }
-					]
-				}
-		  ]
+			{
+				label: 'Developer',
+				submenu: [
+					{ role: 'reload' },
+					{ role: 'forcereload' },
+					{ type: 'separator' },
+					{ role: 'toggledevtools' }
+				]
+			}
+		]
 		: [])
 ];
+
+ipcMain.on('settings:set', (e, value) => {
+	store.set('settings', value);
+});
 
 app.on('window-all-closed', () => {
 	if (!isMac) {

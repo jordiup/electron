@@ -9,7 +9,7 @@ class Store {
 		);
 
 		this.path = path.join(userDataPath, options.configName + '.json');
-		this.data = parseDataFile(this.path, options.default);
+		this.data = parseDataFile(this.path, options.defaults);
 	}
 
 	get(key) {
