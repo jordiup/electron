@@ -101,6 +101,10 @@
 
 			setTimeout(() => alert.classList.add('hide'), 3000)
 		}
+		// Toggle navigation from menubar 
+		ipcRenderer.on('nav:toggle', () => {
+			nav.classList.toggle('hide')
+		})
 	</script>
 </body>
 
