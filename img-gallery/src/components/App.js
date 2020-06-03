@@ -10,7 +10,7 @@ const tree = dirTree("/Users/jordihermoso/code/portfolio/2020-typescript-v4/stat
 	}
 );
 
-// console.log('tree', tree)
+console.log('tree', tree)
 // const test = Object.values(tree.children)
 // console.log('test', test)
 
@@ -18,17 +18,20 @@ let itemPath
 let itemName
 let itemArr = []
 
-tree.children.map(el => {
 
-	el.children.length > 0 ? el.children.map(el2 => {
-		itemArr.push({
-			itemName: el2.name,
-			itemPath: el2.path,
-		})
+console.log(tree)
+
+function itemArrMaker(el) {
+	el.children && el.children.length > 0 ? el.children.map(el2 => {
+		itemArrMaker(el2)
 	})
-		: null
+		: el.type != "directory" && itemArr.push({
+			itemName: el.name,
+			itemPath: el.path,
+		})
 
-})
+}
+itemArrMaker(tree)
 
 console.log(itemArr)
 
@@ -38,15 +41,15 @@ const App = () => {
 
 	return (
 		<div className='app'>
-			<h1>React Electron Boilerplate</h1>
-			<p>This is a simple boilerplate for using React with Electron</p>
-			<Image size="200px" src="file:///Users/jordihermoso/code/portfolio/2020-typescript-v4/static/hero-grid-imgs/0.jpg" />
+			<h1>Image Gallery</h1>
+			<p>This is will show all the apps within a directory</p>
+			{/* <input directory="" webkitdirectory="" type="file" id="dir" onChange={(e) => console.log(e.target.files[0].path)} /> */}
 			<Flex flexDir="row" flexWrap="wrap">
 				{
 					itemArr.map(item => {
 						return (
-							<Flex width="200px" flexDir="column">
-								<Image width="200px" src={'file://' + item.itemPath} />
+							<Flex width="200px" flexDir="column" mr={4}>
+								<Image size="200px" src={'file://' + item.itemPath} />
 								<Text>{item.itemName}</Text>
 							</Flex>)
 					})
