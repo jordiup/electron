@@ -19,10 +19,11 @@ function createMainWindow() {
 		height: 800,
 		show: false,
 		icon: './assets/icons/icon.png',
-		backgroundColor: 'white',
 		webPreferences: {
 			nodeIntegration: true,
+			webSecurity: false,
 		},
+		background: 'white'
 	})
 
 	let indexPath
