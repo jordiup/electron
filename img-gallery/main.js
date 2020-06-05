@@ -20,7 +20,7 @@ function createMainWindow() {
 		show: false,
 		icon: './assets/icons/icon.png',
 		webPreferences: {
-			nodeIntegration: true,
+			nodeIntegration: true, // should consider risks of this
 			webSecurity: false,
 		},
 		background: 'white'
