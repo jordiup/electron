@@ -1,13 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Container from 'react-bootstrap/Container'
 import Table from 'react-bootstrap/Table'
 import Alert from 'react-bootstrap/Alert'
 import LogItem from './LogItem'
 import { AddLogItem } from './AddLogItem'
+import { ipcMain, ipcRenderer } from "electron";
 
 const App = () => {
 
-	const [logs, setLogs] = useState([
+	let dummData = [
 		{
 			_id: 1,
 			text: 'This is log ',
@@ -29,13 +30,22 @@ const App = () => {
 			user: 'Josh',
 			created: new Date().toString()
 		},
-	])
+	]
+
+	const [logs, setLogs] = useState([])
 
 	const [alert, setAlert] = useState({
 		show: false,
 		message: "",
 		variant: "success"
 	})
+
+	useEffect(() => {
+		ipcRenderer.send('logs:load')
+		ipcRenderer.on('logs:get', (e, logs) => {
+			setLogs(JSON.parse(logs))
+		})
+	}, [])
 
 	function addItem(item) {
 		if (item.text == "" || item.user == "" || item.priority == "") {
